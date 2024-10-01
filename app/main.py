@@ -1,17 +1,25 @@
 import socket
 import logging
 import os
+import secrets
+import string
+
 from fastapi import FastAPI
 from starlette.requests import Request
 from starlette.middleware.sessions import SessionMiddleware
+
+def generate_secret_key(length=38):
+    alphabet = string.ascii_letters + string.digits + string.punctuation
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
+
 
 app = FastAPI()
 
 logger = logging.getLogger("api")
 
-app.add_middleware(SessionMiddleware, secret_key=os.environ.get("SECRET_KEY", default=""),
+app.add_middleware(SessionMiddleware, secret_key=os.environ.get("SECRET_KEY", default=generate_secret_key()),
                    session_cookie=os.environ.get(
-                       "SESSION_COOKIE_NAME", default="session"))
+                       "SESSION_COOKIE_NAME", default=f"session-fastapi-hello-world-{generate_secret_key(length=4)}"))
 
 
 @app.get('/health')
